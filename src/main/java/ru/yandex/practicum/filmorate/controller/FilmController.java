@@ -19,7 +19,7 @@ public class FilmController {
     private Collection<Film> films = new HashSet<>();
     @Getter
     private final LocalDate lowThreshholdDate = LocalDate.parse("28.12.1895", DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-    private final int FILM_DESCRIPTION_LENGTH = 200;
+    private final int DESCRIPTION_LENGTH = 200;
 
     @GetMapping
     public Collection<Film> getAll() {
@@ -61,7 +61,7 @@ public class FilmController {
         }
 
         if (film.getDescription() != null) {
-            if (film.getDescription().length() >= FILM_DESCRIPTION_LENGTH) {
+            if (film.getDescription().length() >= DESCRIPTION_LENGTH) {
                 throw new FilmControllerException("Описание фильма не может быть длиннее 200 символов");
             }
 
