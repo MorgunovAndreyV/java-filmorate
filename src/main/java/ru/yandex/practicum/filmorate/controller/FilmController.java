@@ -19,7 +19,7 @@ public class FilmController {
     private Collection<Film> films = new HashSet<>();
     @Getter
     private final LocalDate lowThreshholdDate = LocalDate.parse("28.12.1895", DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-    private final int DESCRIPTION_LENGTH = 200;
+    private static final int DESCRIPTION_LENGTH = 200;
 
     @GetMapping
     public Collection<Film> getAll() {
