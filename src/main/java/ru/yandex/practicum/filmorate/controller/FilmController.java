@@ -11,12 +11,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private Collection<Film> films = new HashSet<>();
+    private Set<Film> films = new HashSet<>();
     @Getter
     private final LocalDate lowThreshholdDate = LocalDate.parse("28.12.1895", DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     private static final int DESCRIPTION_LENGTH = 200;
@@ -27,12 +28,13 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addNew(@RequestBody Film film) throws FilmControllerException {
+    public Film addNew(@RequestBody Film film) {
         filmValidations(film);
 
         if (films.contains(film)) {
             throw new FilmControllerException("Такой фильм уже добавлен");
         }
+
         assignNewId(film);
         films.add(film);
         log.info("Новый фильм добавлен успешно. id:" + film.getId());
@@ -41,7 +43,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film change(@RequestBody Film film) throws FilmControllerException {
+    public Film change(@RequestBody Film film) {
         Film filmFromBase = getFilmByIdString(film.getId());
 
         filmValidations(film);
@@ -55,7 +57,7 @@ public class FilmController {
         return filmFromBase;
     }
 
-    private void filmValidations(Film film) throws FilmControllerException {
+    private void filmValidations(Film film) {
         if (film.getName() == null || film.getName().isEmpty()) {
             throw new FilmControllerException("Название фильма не может быть пустым");
         }
@@ -90,15 +92,16 @@ public class FilmController {
 
     }
 
-    private Film getFilmByIdString(Long id) throws FilmControllerException {
+    private Film getFilmByIdString(Long id) {
         Optional<Film> possibleFilm = films.stream()
                 .filter(film1 -> film1.getId().equals(id))
                 .findFirst();
 
         if (possibleFilm.isEmpty()) {
             throw new FilmControllerException("Фильм с ID " + id + " не найден.");
-        } else return possibleFilm.get();
+        }
 
+        return possibleFilm.get();
     }
 
 }

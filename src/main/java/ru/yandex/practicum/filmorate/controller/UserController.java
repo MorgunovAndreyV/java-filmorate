@@ -6,28 +6,29 @@ import ru.yandex.practicum.filmorate.exception.UserControllerException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private Collection<User> users = new HashSet<>();
+    private Set<User> users = new HashSet<>();
 
     @GetMapping
-    public Collection<User> getAll() {
+    public Set<User> getAll() {
         return users;
     }
 
     @PostMapping
-    public User addNew(@RequestBody User user) throws UserControllerException {
+    public User addNew(@RequestBody User user) {
         userValidations(user);
 
         if (users.contains(user)) {
             throw new UserControllerException("Такой пользователь уже добавлен");
         }
+
         assignNewId(user);
         users.add(user);
         log.info("Новый пользователь добавлен успешно. id:" + user.getId());
@@ -57,7 +58,7 @@ public class UserController {
 
     }
 
-    private void userValidations(User user) throws UserControllerException {
+    private void userValidations(User user) {
         if (user.getLogin() == null || user.getLogin().isEmpty()) {
             throw new UserControllerException("Логин не может быть пустым");
 
@@ -86,7 +87,7 @@ public class UserController {
 
     }
 
-    private User getUserById(Long id) throws UserControllerException {
+    private User getUserById(Long id) {
         Optional<User> possibleFilm = users.stream()
                 .filter(user1 -> user1.getId().equals(id))
                 .findFirst();
@@ -94,8 +95,9 @@ public class UserController {
         if (possibleFilm.isEmpty()) {
             throw new UserControllerException("Пользователь с ID " + id + " не найден.");
 
-        } else return possibleFilm.get();
+        }
 
+        return possibleFilm.get();
     }
 
 }
