@@ -23,7 +23,7 @@ public class FilmController {
     private static final int DESCRIPTION_LENGTH = 200;
 
     @GetMapping
-    public Collection<Film> getAll() {
+    public Set<Film> getAll() {
         return films;
     }
 
