@@ -1,106 +1,67 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmControllerException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private Set<Film> films = new HashSet<>();
-    @Getter
-    private final LocalDate lowThreshholdDate = LocalDate.parse("28.12.1895", DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-    private static final int DESCRIPTION_LENGTH = 200;
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmStorage filmStorage, FilmService filmService) {
+        this.filmStorage = filmStorage;
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public Set<Film> getAll() {
-        return films;
+        return filmStorage.getAll();
     }
 
     @PostMapping
     public Film addNew(@RequestBody Film film) {
-        filmValidations(film);
-
-        if (films.contains(film)) {
-            throw new FilmControllerException("Такой фильм уже добавлен");
-        }
-
-        assignNewId(film);
-        films.add(film);
-        log.info("Новый фильм добавлен успешно. id:" + film.getId());
-
-        return film;
+        return filmStorage.addNew(film);
     }
 
     @PutMapping
     public Film change(@RequestBody Film film) {
-        Film filmFromBase = getFilmByIdString(film.getId());
-
-        filmValidations(film);
-        filmFromBase.setName(film.getName());
-        filmFromBase.setDescription(film.getDescription());
-        filmFromBase.setReleaseDate(film.getReleaseDate());
-        filmFromBase.setDuration(film.getDuration());
-
-        log.info("Запись фильма изменена успешно. id:" + film.getId());
-
-        return filmFromBase;
+        return filmStorage.change(film);
     }
 
-    private void filmValidations(Film film) {
-        if (film.getName() == null || film.getName().isEmpty()) {
-            throw new FilmControllerException("Название фильма не может быть пустым");
-        }
-
-        if (film.getDescription() != null) {
-            if (film.getDescription().length() >= DESCRIPTION_LENGTH) {
-                throw new FilmControllerException("Описание фильма не может быть длиннее 200 символов");
-            }
-
-        }
-
-        if (film.getReleaseDate() != null) {
-            if (film.getReleaseDate().isBefore(lowThreshholdDate)) {
-                throw new FilmControllerException("Дата релиза не может быть раньше " + lowThreshholdDate.toString());
-            }
-
-        }
-
-        if (film.getDuration() != null) {
-            if (film.getDuration() < 0) {
-                throw new FilmControllerException("Продолжительность фильма не может быть отрицательной");
-            }
-
-        }
-
+    @GetMapping("/{id}")
+    public Film getById(@PathVariable Long id) {
+        return filmStorage.getFilmById(id);
     }
 
-    private void assignNewId(Film film) {
-        if (films != null) {
-            film.setId((long) (films.size() + 1));
-        }
+    @PutMapping("/{id}/like/{userId}")
+    public long likeFilmByUser(@PathVariable("id") Long filId,
+                               @PathVariable("userId") Long userId) {
+        filmService.likeFilmByUser(filId, userId);
 
+        return userId;
     }
 
-    private Film getFilmByIdString(Long id) {
-        Optional<Film> possibleFilm = films.stream()
-                .filter(film1 -> film1.getId().equals(id))
-                .findFirst();
+    @DeleteMapping("/{id}/like/{userId}")
+    public long unlikeFilmByUser(@PathVariable("id") Long filId,
+                                 @PathVariable("userId") Long userId) {
+        filmService.unlikeFilmByUser(filId, userId);
 
-        if (possibleFilm.isEmpty()) {
-            throw new FilmControllerException("Фильм с ID " + id + " не найден.");
-        }
+        return userId;
+    }
 
-        return possibleFilm.get();
+    @GetMapping("/popular")
+    public List<Film> getTopCountPopular(@RequestParam(required = false, name = "count") Integer count) {
+        return filmService.topLikes(count);
     }
 
 }
