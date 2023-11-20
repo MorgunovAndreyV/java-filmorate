@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Set;
@@ -14,43 +13,41 @@ import java.util.Set;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final UserStorage userStorage;
     private final UserService userService;
 
     @Autowired
-    public UserController(UserStorage userStorage, UserService userService) {
-        this.userStorage = userStorage;
+    public UserController(UserService userService) {
         this.userService = userService;
 
     }
 
     @GetMapping
     public Set<User> getAll() {
-        return userStorage.getAll();
+        return userService.getAll();
     }
 
     @PostMapping
     public User addNew(@RequestBody User user) {
-        return userStorage.addNew(user);
+        return userService.addNew(user);
     }
 
     @PutMapping
     public User change(@RequestBody User user) {
-        return userStorage.change(user);
+        return userService.change(user);
     }
 
     @GetMapping("/{id}")
     public User getById(@PathVariable Long id) {
-        return userStorage.getUserById(id);
+        return userService.getUserById(id);
     }
 
 
     @PutMapping("/{id}/friends/{friendId}")
-    public Set<User> makeFriends(@PathVariable("id") Long userId,
-                                 @PathVariable("friendId") Long newFriendId) {
+    public List<User> makeFriends(@PathVariable("id") Long userId,
+                                  @PathVariable("friendId") Long newFriendId) {
         userService.makeFriends(userId, newFriendId);
 
-        return userStorage.getFriendLists().get(userId);
+        return userService.getFriendList(userId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

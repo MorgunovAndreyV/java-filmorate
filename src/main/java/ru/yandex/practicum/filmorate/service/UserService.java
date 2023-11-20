@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserStorageException;
+import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -17,6 +19,22 @@ public class UserService {
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
+    }
+
+    public Set<User> getAll() {
+        return userStorage.getAll();
+    }
+
+    public User addNew(User user) throws UserStorageException, UserValidationException {
+        return userStorage.addNew(user);
+    }
+
+    public User getUserById(Long id) throws RecordNotFoundException {
+        return userStorage.getUserById(id);
+    }
+
+    public User change(User user) throws RecordNotFoundException, UserValidationException {
+        return userStorage.change(user);
     }
 
     public void makeFriends(Long firstUserId, Long secondUserId)

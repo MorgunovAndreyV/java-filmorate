@@ -29,7 +29,7 @@ class FilmControllerTest {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         filmService = new FilmService(userStorage, filmStorage);
-        filmController = new FilmController(filmStorage, filmService);
+        filmController = new FilmController(filmService);
         film = Film.builder()
                 .name("Sleepy hollow")
                 .description("That creepy movie")
