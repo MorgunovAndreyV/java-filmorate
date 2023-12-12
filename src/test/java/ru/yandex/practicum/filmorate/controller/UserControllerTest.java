@@ -3,8 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.UserControllerException;
+import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,7 +21,9 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+        UserService userService = new UserService(userStorage);
+        userController = new UserController(userService);
         user = User.builder()
                 .email("mail@mail.ru")
                 .login("dolore")
@@ -48,19 +53,19 @@ class UserControllerTest {
     @Test
     void checkaddUserWithEmptyLogin() {
         user.setLogin("");
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Логин не может быть пустым", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
 
         user.setLogin(null);
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Логин не может быть пустым", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
 
         user.setLogin("Login with whitespaces");
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Логин не может содержать пробелы", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
@@ -71,21 +76,21 @@ class UserControllerTest {
     void checkaddUserWithWrongEmail() {
         user.setEmail(null);
 
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Почта не может быть пустой", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
 
         user.setEmail("");
 
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Почта не может быть пустой", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
 
         user.setEmail("asd");
 
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
         Assertions.assertEquals("Некорректный формат почты", exception.getMessage());
         Assertions.assertFalse(userController.getAll().contains(user));
@@ -96,7 +101,7 @@ class UserControllerTest {
     void checkaddUserWithWrongBirthdate() {
         user.setBirthday(LocalDate.parse("2099-02-01", dateTimeFormatter));
 
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.addNew(user));
 
         Assertions.assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
@@ -136,7 +141,7 @@ class UserControllerTest {
     @Test
     void checkModifyLoginWrongly() {
         final String finalNewLogin = "";
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(existingUser.getEmail())
@@ -151,7 +156,7 @@ class UserControllerTest {
         Assertions.assertNotEquals(finalNewLogin, existingUser.getLogin());
 
         final String finalNewLogin2 = null;
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(existingUser.getEmail())
@@ -167,7 +172,7 @@ class UserControllerTest {
 
         final String finalNewLogin3 = "Login whitespace";
 
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(existingUser.getEmail())
@@ -186,7 +191,7 @@ class UserControllerTest {
     @Test
     void checkModifyUserWithWrongBirthdate() {
         final LocalDate finalDate = LocalDate.parse("2099-02-01", dateTimeFormatter);
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(existingUser.getEmail())
@@ -205,7 +210,7 @@ class UserControllerTest {
     @Test
     void checkModifyUserWithWrongEmail() {
         final String newFinalEmail = "";
-        Exception exception = Assertions.assertThrows(UserControllerException.class,
+        Exception exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(newFinalEmail)
@@ -220,7 +225,7 @@ class UserControllerTest {
         Assertions.assertNotEquals(newFinalEmail, existingUser.getBirthday());
 
         final String newFinalEmail2 = null;
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(newFinalEmail2)
@@ -235,7 +240,7 @@ class UserControllerTest {
         Assertions.assertNotEquals(newFinalEmail2, existingUser.getBirthday());
 
         final String newFinalEmail3 = "email.com";
-        exception = Assertions.assertThrows(UserControllerException.class,
+        exception = Assertions.assertThrows(UserValidationException.class,
                 () -> userController.change(User.builder()
                         .id(existingUserId)
                         .email(newFinalEmail3)

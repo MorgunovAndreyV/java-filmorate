@@ -3,14 +3,22 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.FilmControllerException;
+import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 class FilmControllerTest {
     private FilmController filmController;
+    private FilmService filmService;
+    private UserStorage userStorage;
+    private FilmStorage filmStorage;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private Film film;
     private Film existingFilm;
@@ -18,7 +26,10 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        userStorage = new InMemoryUserStorage();
+        filmStorage = new InMemoryFilmStorage();
+        filmService = new FilmService(userStorage, filmStorage);
+        filmController = new FilmController(filmService);
         film = Film.builder()
                 .name("Sleepy hollow")
                 .description("That creepy movie")
@@ -47,13 +58,13 @@ class FilmControllerTest {
     @Test
     void checkaddFilmWithEmptyName() {
         film.setName("");
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.addNew(film));
         Assertions.assertEquals("Название фильма не может быть пустым", exception.getMessage());
         Assertions.assertFalse(filmController.getAll().contains(film));
 
         film.setName(null);
-        exception = Assertions.assertThrows(FilmControllerException.class,
+        exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.addNew(film));
         Assertions.assertEquals("Название фильма не может быть пустым", exception.getMessage());
         Assertions.assertFalse(filmController.getAll().contains(film));
@@ -67,7 +78,7 @@ class FilmControllerTest {
                 "That creepy movie" + "That creepy movie" + "That creepy movie" + "That creepy movie" +
                 "That creepy movie" + "That creepy movie");
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.addNew(film));
         Assertions.assertEquals("Описание фильма не может быть длиннее 200 символов", exception.getMessage());
         Assertions.assertFalse(filmController.getAll().contains(film));
@@ -77,9 +88,9 @@ class FilmControllerTest {
     void checkaddFilmWithWrongDate() {
         film.setReleaseDate(LocalDate.parse("1699-02-01", dateTimeFormatter));
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.addNew(film));
-        Assertions.assertEquals("Дата релиза не может быть раньше " + filmController.getLowThreshholdDate(),
+        Assertions.assertEquals("Дата релиза не может быть раньше " + filmStorage.getLowThresholdDate(),
                 exception.getMessage());
         Assertions.assertFalse(filmController.getAll().contains(film));
     }
@@ -87,7 +98,7 @@ class FilmControllerTest {
     @Test
     void checkaddFilmWithWrongDuration() {
         film.setDuration(-2);
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.addNew(film));
         Assertions.assertEquals("Продолжительность фильма не может быть отрицательной",
                 exception.getMessage());
@@ -119,7 +130,7 @@ class FilmControllerTest {
     void checkModifyNameWrongly() {
         final String finalNewName = "";
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.change(
                         Film.builder()
                                 .id(existingFilmId)
@@ -136,7 +147,7 @@ class FilmControllerTest {
 
         final String finalNewName2 = null;
 
-        exception = Assertions.assertThrows(FilmControllerException.class,
+        exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.change(
                         Film.builder()
                                 .id(existingFilmId)
@@ -158,7 +169,7 @@ class FilmControllerTest {
                 "too big New description is too big New description is too big New description is too big New " +
                 "description is too big New description is too big New description is too big New description is too big ";
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.change(
                         Film.builder()
                                 .id(existingFilmId)
@@ -179,7 +190,7 @@ class FilmControllerTest {
     void checkModifyReleaseDateWrongly() {
         final LocalDate finalNewReleaseDate = LocalDate.parse("1299-02-01", dateTimeFormatter);
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.change(
                         Film.builder()
                                 .id(existingFilmId)
@@ -191,7 +202,7 @@ class FilmControllerTest {
                 )
         );
 
-        Assertions.assertEquals("Дата релиза не может быть раньше " + filmController.getLowThreshholdDate(),
+        Assertions.assertEquals("Дата релиза не может быть раньше " + filmStorage.getLowThresholdDate(),
                 exception.getMessage());
         Assertions.assertNotEquals(finalNewReleaseDate, existingFilm.getReleaseDate());
     }
@@ -200,7 +211,7 @@ class FilmControllerTest {
     void checkModifyDurationWrongly() {
         final Integer finalNewDuration = -2;
 
-        Exception exception = Assertions.assertThrows(FilmControllerException.class,
+        Exception exception = Assertions.assertThrows(FilmValidationException.class,
                 () -> filmController.change(
                         Film.builder()
                                 .id(existingFilmId)
