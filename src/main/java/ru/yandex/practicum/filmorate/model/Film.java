@@ -5,8 +5,6 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @Data
 @Builder
@@ -18,7 +16,7 @@ public class Film {
     private Integer duration;
     private MPA mpa;
     private List<Genre> genres;
-    public static Comparator <Film> comparingFilmById = (film1, film2) -> {
+    public static Comparator<Film> comparingFilmById = (film1, film2) -> {
         if (film1.getId() > film2.getId()) {
             return 1;
         } else if (film1.getId() < film2.getId()) {

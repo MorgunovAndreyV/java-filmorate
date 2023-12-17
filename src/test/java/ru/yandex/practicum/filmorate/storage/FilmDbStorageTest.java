@@ -296,7 +296,7 @@ class FilmDbStorageTest {
     @Test
     void likeFilmNotExisting() {
         userDbStorage.addNew(user1);
-        Exception e = Assertions.assertThrows(RecordNotFoundException.class, () ->{
+        Exception e = Assertions.assertThrows(RecordNotFoundException.class, () -> {
             filmDbStorage.createLikeFilmByUser(film1.getId(), user1.getId());
         });
 
