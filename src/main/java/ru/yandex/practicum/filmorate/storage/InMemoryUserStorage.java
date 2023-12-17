@@ -59,18 +59,18 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void addToFriends(User user_first, User user_second) {
-        getFriendLists().get(user_first.getId()).add(user_second);
+    public void addToFriends(User userFirst, User userSecond) {
+        getFriendLists().get(userFirst.getId()).add(userSecond);
     }
 
     @Override
-    public void removeFromFriends(User user_first, User user_second) {
-        if (getFriendLists().containsKey(user_first.getId())) {
-            getFriendLists().get(user_first.getId()).remove(user_second);
+    public void removeFromFriends(User userFirst, User userSecond) {
+        if (getFriendLists().containsKey(userFirst.getId())) {
+            getFriendLists().get(userFirst.getId()).remove(userSecond);
         }
 
-        if (getFriendLists().containsKey(user_second.getId())) {
-            getFriendLists().get(user_second.getId()).remove(user_first);
+        if (getFriendLists().containsKey(userSecond.getId())) {
+            getFriendLists().get(userSecond.getId()).remove(userFirst);
         }
 
 
