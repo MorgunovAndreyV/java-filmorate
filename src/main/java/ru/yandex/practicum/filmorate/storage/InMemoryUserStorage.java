@@ -6,15 +6,13 @@ import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserStorageException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-@Component
 @Slf4j
+@Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private Set<User> users = new HashSet<>();
     private HashMap<Long, Set<User>> friendLists = new HashMap<>();
@@ -34,6 +32,8 @@ public class InMemoryUserStorage implements UserStorage {
 
         assignNewId(user);
         users.add(user);
+        friendLists.put(user.getId(), new HashSet<>());
+
         log.info("Новый пользователь добавлен успешно. id:" + user.getId());
 
         return user;
@@ -56,6 +56,36 @@ public class InMemoryUserStorage implements UserStorage {
 
     public HashMap<Long, Set<User>> getFriendLists() {
         return friendLists;
+    }
+
+    @Override
+    public void addToFriends(User user_first, User user_second) {
+        getFriendLists().get(user_first.getId()).add(user_second);
+    }
+
+    @Override
+    public void removeFromFriends(User user_first, User user_second) {
+        if (getFriendLists().containsKey(user_first.getId())) {
+            getFriendLists().get(user_first.getId()).remove(user_second);
+        }
+
+        if (getFriendLists().containsKey(user_second.getId())) {
+            getFriendLists().get(user_second.getId()).remove(user_first);
+        }
+
+
+    }
+
+    @Override
+    public ArrayList<User> getUserFriendList(Long userId) {
+        if (getFriendLists().containsKey(userId)) {
+            ArrayList<User> sortedList = new ArrayList<>(getFriendLists().get(userId));
+            sortedList.sort(UserService.getUserComparatorByID());
+
+            return sortedList;
+
+        } else return new ArrayList<>();
+
     }
 
     private void assignNewId(User user) {

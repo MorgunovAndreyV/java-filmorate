@@ -21,7 +21,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public Set<Film> getAll() {
+    public List<Film> getAll() {
         return filmService.getAll();
     }
 
@@ -49,9 +49,9 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public long unlikeFilmByUser(@PathVariable("id") Long filId,
+    public long unlikeFilmByUser(@PathVariable("id") Long filmId,
                                  @PathVariable("userId") Long userId) {
-        filmService.unlikeFilmByUser(filId, userId);
+        filmService.unlikeFilmByUser(filmId, userId);
 
         return userId;
     }

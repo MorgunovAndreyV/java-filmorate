@@ -1,12 +1,15 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmServiceException;
 import ru.yandex.practicum.filmorate.exception.FilmStorageException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -23,14 +26,25 @@ public class FilmService {
     private final Comparator<Film> filmComparatorByLikes = new FilmComparatorByLikes();
 
     @Autowired
-    public FilmService(UserStorage userStorage, FilmStorage filmStorage) {
+
+    public FilmService(@Qualifier("UserDbStorage") UserStorage userStorage,
+                       @Qualifier("FilmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
 
-    public Set<Film> getAll() {
+    public List<Film> getAll() {
         return filmStorage.getAll();
     }
+
+    public List<Genre> getAllGenres() {
+        return filmStorage.getAllGenres();
+    }
+
+    public List<MPA> getAllMPAs() {
+        return filmStorage.getAllMPAs();
+    }
+
 
     public Film addNew(Film film) throws FilmValidationException, FilmStorageException {
         return filmStorage.addNew(film);
@@ -44,15 +58,19 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
+    public Genre getGenreById(Long id) throws RecordNotFoundException {
+        return filmStorage.getGenreById(id);
+    }
+
+    public MPA getMPAById(Long id) throws RecordNotFoundException {
+        return filmStorage.getMPAById(id);
+    }
+
     public void likeFilmByUser(Long filmId, Long userId) throws RecordNotFoundException {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(filmId);
 
-        if (!filmStorage.getLikeList().containsKey(filmId)) {
-            filmStorage.getLikeList().put(filmId, new HashSet<>());
-        }
-
-        filmStorage.getLikeList().get(filmId).add(userId);
+        filmStorage.createLikeFilmByUser(filmId, userId);
 
     }
 
@@ -60,19 +78,12 @@ public class FilmService {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(filmId);
 
-        if (filmStorage.getLikeList().containsKey(filmId)) {
-            filmStorage.getLikeList().get(filmId).remove(userId);
-        }
-
+        filmStorage.deleteLikeFilmByUser(filmId, userId);
     }
 
     public int getFilmLikeCount(Long filmId) throws RecordNotFoundException {
         filmStorage.getFilmById(filmId);
-        if (filmStorage.getLikeList().containsKey(filmId)) {
-            return filmStorage.getLikeList().get(filmId).size();
-        }
-
-        return 0;
+        return filmStorage.getFilmLikeStorageCount(filmId);
     }
 
     public List<Film> topLikes(Integer count) throws FilmServiceException {
@@ -91,6 +102,8 @@ public class FilmService {
 
         return likedFilms.subList(0, count);
     }
+
+
 
     class FilmComparatorByLikes implements Comparator<Film> {
 
