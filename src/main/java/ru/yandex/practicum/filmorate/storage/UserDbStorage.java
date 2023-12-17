@@ -18,7 +18,7 @@ import java.util.*;
 @Slf4j
 @Component("UserDbStorage")
 public class UserDbStorage implements UserStorage {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -95,8 +95,7 @@ public class UserDbStorage implements UserStorage {
     public List<User> getUserFriendList(Long userId) {
         List<User> userList = new ArrayList<>();
 
-        int userFriendlist = getUserFriendlistId(userId);
-        String sqlQuery = "SELECT * FROM USERS u " +
+        String sqlQuery = "SELECT u.ID, u.EMAIL, u.LOGIN, u.NAME, u.BIRTHDAY FROM USERS u " +
                 "INNER JOIN USER_FRIENDLIST_ENTRIES ufe ON ufe.ASSOCIATED_USER_ID = u.ID " +
                 "INNER JOIN USER_FRIENDLISTS uf ON ufe.FRIENDLIST_ID = uf.ID " +
                 "WHERE uf.USER_ID = ?";
@@ -120,7 +119,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean existingUser(Long id) throws RecordNotFoundException {
-        String sqlQuery = "SELECT EXISTS(select * from USERS where id = ?)";
+        String sqlQuery = "SELECT EXISTS(select ID from USERS where id = ?)";
         if (Boolean.TRUE
                 .equals(jdbcTemplate.queryForObject(sqlQuery, new Long[]{id}, Boolean.class))) {
             return true;
@@ -225,8 +224,8 @@ public class UserDbStorage implements UserStorage {
                 return friendListEntry;
             }
 
-
         }
+
         return -1L;
 
     }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.comparator.GenreComparators;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -16,14 +17,6 @@ public class Film {
     private Integer duration;
     private MPA mpa;
     private List<Genre> genres;
-    public static Comparator<Film> comparingFilmById = (film1, film2) -> {
-        if (film1.getId() > film2.getId()) {
-            return 1;
-        } else if (film1.getId() < film2.getId()) {
-            return -1;
-        }
-        return 0;
-    };
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
@@ -41,14 +34,7 @@ public class Film {
         Set<Genre> unifiedGenreList = new HashSet<>(genres);
         List<Genre> sortedGenreList = new ArrayList<>(unifiedGenreList);
 
-        sortedGenreList.sort((genre1, genre2) -> {
-            if (genre1.getId() > genre2.getId()) {
-                return 1;
-            } else if (genre1.getId() < genre2.getId()) {
-                return -1;
-            }
-            return 0;
-        });
+        sortedGenreList.sort(GenreComparators.compareGenreById);
 
         this.genres = sortedGenreList;
     }

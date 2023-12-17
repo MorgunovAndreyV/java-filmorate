@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.comparator.FilmComparators;
+import ru.yandex.practicum.filmorate.comparator.GenreComparators;
+import ru.yandex.practicum.filmorate.comparator.MPAComparators;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -20,15 +24,12 @@ import java.util.*;
 
 @Slf4j
 @Component("FilmDbStorage")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
     static final LocalDate LOW_THRESHOLD_DATE =
             LocalDate.parse("28.12.1895", DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     static final int DESCRIPTION_LENGTH = 200;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Film> getAll() {
@@ -45,31 +46,31 @@ public class FilmDbStorage implements FilmStorage {
                     film.setGenres(getGenresForFilm(film));
                 });
 
-        fetchedFilms.sort(Film.comparingFilmById);
+        fetchedFilms.sort(FilmComparators.compareFilmById);
 
         return fetchedFilms;
     }
 
     public List<Genre> getAllGenres() {
-        String sqlQuery = "SELECT * from GENRES";
+        String sqlQuery = "SELECT ID, NAME from GENRES";
         List<Genre> outPutList = new ArrayList<>(jdbcTemplate.query(sqlQuery, this::mapRowToGenre));
 
-        outPutList.sort(Genre.comparingGenreById);
+        outPutList.sort(GenreComparators.compareGenreById);
         return outPutList;
     }
 
     @Override
     public List<MPA> getAllMPAs() {
-        String sqlQuery = "SELECT * from MPAs";
+        String sqlQuery = "SELECT ID, NAME from MPAs";
         List<MPA> outPutList = new ArrayList<>(jdbcTemplate.query(sqlQuery, this::mapRowToMPA));
 
-        outPutList.stream().sorted();
+        outPutList.sort(MPAComparators.compareMPAById);
         return outPutList;
     }
 
     @Override
     public Genre getGenreById(Long id) {
-        String sqlQuery = "SELECT * from GENRES " +
+        String sqlQuery = "SELECT ID, NAME from GENRES " +
                 "WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
@@ -82,7 +83,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public MPA getMPAById(Long id) {
-        String sqlQuery = "SELECT * from MPAs " +
+        String sqlQuery = "SELECT ID, NAME from MPAs " +
                 "WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMPA, id);

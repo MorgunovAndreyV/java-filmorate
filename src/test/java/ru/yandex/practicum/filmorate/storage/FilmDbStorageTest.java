@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
@@ -27,8 +28,6 @@ class FilmDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private FilmDbStorage filmDbStorage;
     private UserDbStorage userDbStorage;
-
-
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private Film film1;
     private Film film2;

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
@@ -10,20 +10,14 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
-    private static final Comparator<User> userComparatorByID = new UserComparatorById();
-
-    @Autowired
-    public UserService(@Qualifier("UserDbStorage") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    @Qualifier("UserDbStorage") private final UserStorage userStorage;
 
     public Set<User> getAll() {
         return userStorage.getAll();
@@ -75,28 +69,6 @@ public class UserService {
         return userStorage.getUserFriendList(userId)
                 .stream().filter(user -> userStorage.getUserFriendList(otherUserId).contains(user))
                 .collect(Collectors.toSet());
-    }
-
-    public static Comparator<User> getUserComparatorByID() {
-        return userComparatorByID;
-    }
-
-    static class UserComparatorById implements Comparator<User> {
-
-        @Override
-        public int compare(User o1, User o2) {
-            if (o1.getId() != null && o2.getId() != null) {
-                return o1.getId().compareTo(o2.getId());
-
-            } else {
-                if (o1.getId() == null && o2.getId() != null) {
-                    return -1;
-                } else if (o1.getId() != null) {
-                    return 1;
-                } else return 0;
-            }
-
-        }
     }
 
 }

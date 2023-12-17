@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.comparator.UserComparators;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserStorageException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -73,14 +73,13 @@ public class InMemoryUserStorage implements UserStorage {
             getFriendLists().get(userSecond.getId()).remove(userFirst);
         }
 
-
     }
 
     @Override
     public ArrayList<User> getUserFriendList(Long userId) {
         if (getFriendLists().containsKey(userId)) {
             ArrayList<User> sortedList = new ArrayList<>(getFriendLists().get(userId));
-            sortedList.sort(UserService.getUserComparatorByID());
+            sortedList.sort(UserComparators.compareUsersById);
 
             return sortedList;
 
