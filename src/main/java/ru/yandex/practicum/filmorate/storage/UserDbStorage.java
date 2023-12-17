@@ -81,14 +81,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void addToFriends(User user_first, User user_second) {
-        createUserFriendListEntry(user_first.getId(), user_second.getId());
+    public void addToFriends(User userFirst, User userSecond) {
+        createUserFriendListEntry(userFirst.getId(), userSecond.getId());
 
     }
 
     @Override
-    public void removeFromFriends(User user_first, User user_second) {
-        deleteUserFriendlistEntry(user_first.getId(), user_second.getId());
+    public void removeFromFriends(User userFirst, User userSecond) {
+        deleteUserFriendlistEntry(userFirst.getId(), userSecond.getId());
     }
 
     @Override
