@@ -1,27 +1,22 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
     @GetMapping
-    public Set<Film> getAll() {
+    public List<Film> getAll() {
         return filmService.getAll();
     }
 
@@ -49,9 +44,9 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public long unlikeFilmByUser(@PathVariable("id") Long filId,
+    public long unlikeFilmByUser(@PathVariable("id") Long filmId,
                                  @PathVariable("userId") Long userId) {
-        filmService.unlikeFilmByUser(filId, userId);
+        filmService.unlikeFilmByUser(filmId, userId);
 
         return userId;
     }

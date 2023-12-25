@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public interface UserStorage {
@@ -14,7 +14,11 @@ public interface UserStorage {
 
     User getUserById(Long id);
 
-    HashMap<Long, Set<User>> getFriendLists();
+    void addToFriends(User userFirst, User userSecond);
+
+    void removeFromFriends(User userFirst, User userSecond);
+
+    List<User> getUserFriendList(Long userId);
 
     boolean existingUser(Long id);
 }

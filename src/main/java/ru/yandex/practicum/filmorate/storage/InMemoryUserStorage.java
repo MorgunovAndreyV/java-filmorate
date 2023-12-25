@@ -2,19 +2,17 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.comparator.UserComparators;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserStorageException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-@Component
 @Slf4j
+@Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private Set<User> users = new HashSet<>();
     private HashMap<Long, Set<User>> friendLists = new HashMap<>();
@@ -34,6 +32,8 @@ public class InMemoryUserStorage implements UserStorage {
 
         assignNewId(user);
         users.add(user);
+        friendLists.put(user.getId(), new HashSet<>());
+
         log.info("Новый пользователь добавлен успешно. id:" + user.getId());
 
         return user;
@@ -56,6 +56,35 @@ public class InMemoryUserStorage implements UserStorage {
 
     public HashMap<Long, Set<User>> getFriendLists() {
         return friendLists;
+    }
+
+    @Override
+    public void addToFriends(User userFirst, User userSecond) {
+        getFriendLists().get(userFirst.getId()).add(userSecond);
+    }
+
+    @Override
+    public void removeFromFriends(User userFirst, User userSecond) {
+        if (getFriendLists().containsKey(userFirst.getId())) {
+            getFriendLists().get(userFirst.getId()).remove(userSecond);
+        }
+
+        if (getFriendLists().containsKey(userSecond.getId())) {
+            getFriendLists().get(userSecond.getId()).remove(userFirst);
+        }
+
+    }
+
+    @Override
+    public ArrayList<User> getUserFriendList(Long userId) {
+        if (getFriendLists().containsKey(userId)) {
+            ArrayList<User> sortedList = new ArrayList<>(getFriendLists().get(userId));
+            sortedList.sort(UserComparators.compareUsersById);
+
+            return sortedList;
+
+        } else return new ArrayList<>();
+
     }
 
     private void assignNewId(User user) {

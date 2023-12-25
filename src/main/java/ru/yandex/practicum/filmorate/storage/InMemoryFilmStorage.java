@@ -6,18 +6,17 @@ import ru.yandex.practicum.filmorate.exception.FilmStorageException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.RecordNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
-@Component
+@Component("InMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
-    private Set<Film> films = new HashSet<>();
+    private List<Film> films = new ArrayList<>();
     private HashMap<Long, Set<Long>> likeLists = new HashMap<>();
 
     static final LocalDate LOW_THRESHOLD_DATE =
@@ -25,7 +24,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     static final int DESCRIPTION_LENGTH = 200;
 
     @Override
-    public Set<Film> getAll() {
+    public List<Film> getAll() {
         return films;
     }
 
@@ -57,8 +56,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return filmFromBase;
     }
 
-    @Override
-    public HashMap<Long, Set<Long>> getLikeList() {
+    public HashMap<Long, Set<Long>> getLikeLists() {
         return likeLists;
     }
 
@@ -109,8 +107,62 @@ public class InMemoryFilmStorage implements FilmStorage {
         return possibleFilm.get();
     }
 
+    @Override
+    public Set<Long> getLikeListForFilm(Long filmId) {
+        if (!getLikeLists().containsKey(filmId)) {
+            getLikeLists().put(filmId, new HashSet<>());
+        }
+
+        return getLikeLists().get(filmId);
+
+    }
+
     public LocalDate getLowThresholdDate() {
         return LOW_THRESHOLD_DATE;
+    }
+
+    @Override
+    public void createLikeFilmByUser(Long filmId, Long userId) {
+        if (!getLikeLists().containsKey(filmId)) {
+            getLikeLists().put(filmId, new HashSet<>());
+        }
+        getLikeListForFilm(filmId).add(userId);
+    }
+
+    @Override
+    public void deleteLikeFilmByUser(Long filmId, Long userId) {
+        if (getLikeLists().containsKey(filmId)) {
+            getLikeListForFilm(filmId).remove(userId);
+        }
+    }
+
+    @Override
+    public int getFilmLikeStorageCount(Long filmId) {
+        if (getLikeLists().containsKey(filmId)) {
+            return getLikeListForFilm(filmId).size();
+        }
+
+        return 0;
+    }
+
+    @Override
+    public List<Genre> getAllGenres() {
+        return null;
+    }
+
+    @Override
+    public List<MPA> getAllMPAs() {
+        return null;
+    }
+
+    @Override
+    public Genre getGenreById(Long id) {
+        return null;
+    }
+
+    @Override
+    public MPA getMPAById(Long id) {
+        return null;
     }
 
 }

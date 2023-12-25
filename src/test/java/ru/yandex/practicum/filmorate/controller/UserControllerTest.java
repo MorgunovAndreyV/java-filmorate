@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -12,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
     private UserController userController;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
